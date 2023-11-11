@@ -22,6 +22,9 @@ async function getGamersList(pageNumber = 1) {
 }
 
 async function checkGamerForGame(gamerUrl, gameName) {
+  // wait for a bit so we don't get blocked
+  await new Promise((r) => setTimeout(r, 2500));
+
   try {
     const response = await axios.get(`https://twitchtracker.com${gamerUrl}/games`);
     const $ = cheerio.load(response.data);
@@ -29,7 +32,7 @@ async function checkGamerForGame(gamerUrl, gameName) {
     // This depends on how the game information is structured in the HTML
     return $('#games td.cell-slot').text().includes(gameName);
   } catch (error) {
-    console.error(`Error checking gamer's page (${gamerUrl}):`, error);
+    console.error(`Error checking gamer's page (${gamerUrl}):`, error.message);
   }
 }
 
@@ -37,10 +40,12 @@ async function main() {
   // TODO: implement pagination, reducer that does first 100 pages or so
   const gamers = await getGamersList();
   const gamersWithGame = [];
+  const gameLookup = 'FTL';
   for (const gamer of gamers) {
-    const hasGame = await checkGamerForGame(gamer, 'FTL');
+    const hasGame = await checkGamerForGame(gamer, gameLookup);
+    console.log(`Checking ${gamer}...`);
     if (hasGame) {
-      console.log(`Gamer at ${gamer} plays the specified game.`);
+      console.log(`Gamer at ${gamer} plays the specified game (${gameLookup}).`);
       gamersWithGame.push(gamer);
     }
   }
