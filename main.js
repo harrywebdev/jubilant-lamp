@@ -14,7 +14,7 @@ function writeGamersPageToFile(gamesLookup, pageNumber, data, totalGamers) {
   };
 
   try {
-    const jsonFile = fs.readFileSync(`output/${fileName}.json`, 'utf-8');
+    const jsonFile = fs.readFileSync(`./output/${fileName}.json`, 'utf-8');
 
     output = JSON.parse(jsonFile);
   } catch (error) {
@@ -94,7 +94,7 @@ async function checkGamerForGame(gamerUrl, gameNames = []) {
     const $ = cheerio.load(response.data);
 
     // find the list of games
-    const gamesList = $('#games td.cell-slot').text();
+    const gamesList = $('#games td').text();
 
     // find only the games that are in the list of games we are looking for
     const foundGames = gameNames.filter((gameName) => gamesList.includes(gameName));
@@ -106,6 +106,11 @@ async function checkGamerForGame(gamerUrl, gameNames = []) {
   }
 }
 
+const arrayRange = (start, stop, step) =>
+Array.from(
+        { length: (stop - start) / step + 1},
+        (value, index) => start + index * step
+        );
 async function main() {
   /*
     In sequence:
@@ -115,14 +120,16 @@ async function main() {
   */
 
   // create an array of page numbers (btw one page has 50 totalGamers)
-  const totalPages = Array(2) // change this 2 to actual number of pages
+  /*const totalPages = Array(150) // change this 2 to actual number of pages
     .fill()
     .map((_, i) => i + 1);
+    */
+  const totalPages = arrayRange(1, 200 1);
 
   // cannot fetch in parallel, otherwise we get blocked
   let totalGamers = 0;
   const gamersWithGame = [];
-  const gamesLookup = ['FTL', 'Dota 2'];
+  const gamesLookup = ['FTL', 'Slay the Spire'];
   for (const pageNumber of totalPages) {
     try {
       // first, skip this page if we already have it
